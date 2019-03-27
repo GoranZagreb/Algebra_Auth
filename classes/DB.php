@@ -120,6 +120,110 @@ class DB
 	return false;
   }
   
+  /**
+   * Get All data
+   *
+   * @param string $fields
+   * @param string $table
+   * @param array $where
+   * @return DB|false
+   */
+   public function get($fields,$table,$where=array())
+   {
+	   return $this->action("SELECT {$fields}", $table,$where);
+   }
+   
+  /**
+   * Find data by id
+   *
+   * @param int $id
+   * @param string $table
+   * @return DB|false
+   */
+   public function find($id,$table)
+   {
+	   return $this->action('SELECT *', $table, array('id','=',$id));
+   }
+   
+  /**
+   * Delete data from database
+   *
+   * @param string $table
+   * @param array $where
+   * @return DB|false
+   */
+   public function destroy($table,$where=array())
+   {
+	   return $this->action('DELETE',$table,$where);
+   }
+   
+  /**
+   * Insert data into database
+   *
+   * @param string $table
+   * @param array $fields
+   * @return bool true|false
+   */
+   public function insert($table,$fields)
+   {
+	   $columns = implode(',', array_keys($fields));
+	   $values = '';
+	   $fields_num = count($fields);
+	   $x = 1;
+	   
+	   foreach($fields as $field){
+		   $values .= '?';
+		   if($x < $fields_num){
+			   $values .= ',';
+		   }
+		   $x++;
+	   }
+	   
+	   $sql = "INSERT INTO {$table} ({$columns}) VALUES ({$values})";
+	   
+	   if(!$this->query($sql,$fields)->error()){
+		   return true;
+	   }
+	   
+	   return false;
+   }
+   
+   /**
+   * Update data into database
+   *
+   * @param string $table
+   * @param array $fields
+   * @param array $where
+   * @return bool true|false
+   */
+   public function update($table,$fields,$where=array())
+   {
+	   $fields_num = count($fields);
+	   $set = '';
+	   $x = 1;
+	   
+	   foreach($fields as $column=>$value){
+		   $set .= "{$column} = ?";
+		   if($x < $fields_num){
+			   $set .= ', ';
+		   }
+		   $x++;
+	   }
+	   
+	   if(count($where) === 3){
+		   $sql = "UPDATE {$table} SET {$set} WHERE {$where[0]} {$where[1]} {$where[2]}";
+	   } else {
+		   $sql = "UPDATE {$table} SET {$set}";
+	   }
+	   
+	   if(!$this->query($sql,$fields)->error()){
+		   return true;
+	   }
+	   
+	   return false;
+   }
+   
+  
   /*####### GETERS #######*/
   
   /* conn */
@@ -144,6 +248,12 @@ class DB
   public function results()
   {
     return $this->results;
+  }
+  
+  /* first */
+  public function first()
+  {
+    return $this->results[0];
   }
 }
 
