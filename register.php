@@ -3,11 +3,15 @@
 	
 	$user = new User();
 	
+	if($user->check()){
+		Redirect::to('dashboard');
+	}
+	
 	$validation = new Validation();
 	
 	if(Request::exists('post')){
 		if(Token::check(Request::getPost('CSRF_token'))){
-			$validate = $validation->check(/*[
+			$validate = $validation->check([
 				'name' => [
 					'required' => true,
 					'min' => 2,
@@ -26,7 +30,7 @@
 				'confirmPassword' =>[
 					'match' => 'password'
 				]
-			]*/);
+			]);
 			
 			if($validate->getPassed()){
 				$salt = Hash::salt(32);
@@ -41,16 +45,14 @@
 				try{
 					
 					$user->create($userData);
-					//throw new Exception ('There was a problem creating an account!');
 					
 				} catch (Exception $e){
 					Session::flash('danger', $e->getMessage());
 					Redirect::to('register');
 				}
 				
-				
 				Session::flash('success', 'You are registered successfully!');
-				Redirect::to('index');
+				Redirect::to('login');
 			}
 		}
 	}
